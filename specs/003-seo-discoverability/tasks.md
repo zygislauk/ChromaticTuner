@@ -958,14 +958,14 @@ a laptop can prove.
 From research D10 and quickstart V29. This runs at deploy time, not at merge time, and every item is
 something no gate in this repo can check.
 
-- [ ] **Set `VITE_SITE_URL` to the canonical origin, with no trailing slash**, for the production build
+- [X] **Set `VITE_SITE_URL` to the canonical origin, with no trailing slash**, for the production build
       only. It is read in `apps/web/vite.config.ts` and feeds the canonical tag, `og:url`, the JSON-LD
       `url` and `image`, `sitemap.xml`, and the `Sitemap:` line in `robots.txt`. Unset, the build falls
       back to `http://localhost:5173` and emits a disallow-all `robots.txt` — designed to fail safe, so a
       forgotten variable costs indexing rather than shipping a confidently wrong canonical.
-- [ ] **Confirm the production `robots.txt` allows crawling** and names the sitemap at an absolute URL,
+- [X] **Confirm the production `robots.txt` allows crawling** and names the sitemap at an absolute URL,
       and that `sitemap.xml` lists the canonical address and nothing else.
-- [ ] **Leave `VITE_SITE_URL` unset on preview and branch deployments.** ⚠️ **Quickstart V29 step 4 is
+- [X] **Leave `VITE_SITE_URL` unset on preview and branch deployments.** ⚠️ **Quickstart V29 step 4 is
       wrong as written.** It says to "deploy a preview build with a different origin and confirm its
       `robots.txt` disallows everything". It will not: the check is
       `isCanonicalOrigin = siteOrigin !== DEVELOPMENT_ORIGIN`, so *any* origin other than localhost counts
@@ -974,7 +974,7 @@ something no gate in this repo can check.
       hosting platform injects a per-deployment URL automatically, that injection has to be turned off for
       previews or they will compete with the live site for the same queries. `verify:build-output` tests
       exactly the unset case, which is the one that matters.
-- [ ] **Configure the host so unknown paths return `404`, not the SPA shell with a `200`** (research D10).
+- [X] **Configure the host so unknown paths return `404`, not the SPA shell with a `200`** (research D10).
       This is the soft-404 liability, and it is not fixable in the app: the service worker serves the
       cached `index.html` for any in-scope navigation and the app has exactly one real URL and no router.
       Measured on the dev server during T048, `/does-not-exist.svg` answers `200 text/html` — the same
@@ -982,12 +982,72 @@ something no gate in this repo can check.
       instead of a 404. Note the service worker's navigation fallback is correct and should stay: it is
       what makes the app work offline. The 404 belongs in the origin's configuration, for non-navigation
       requests and for paths outside the precache.
-- [ ] **Regenerate `og-image.png` if the copy or the palette changed** — `pnpm build` first, then
+- [X] **Regenerate `og-image.png` if the copy or the palette changed** — `pnpm build` first, then
       `pnpm --filter @chromatic-tuner/web og:image`, then commit. The generator lifts both the palette and
       the headline out of `dist/index.html`, so a stale `dist/` produces a stale card.
 - [ ] **Run V28** — Rich Results Test, Schema.org validator, Lighthouse SEO — against the deployed URL.
 - [ ] **Run V29** — paste the URL into at least three platforms, check the card and the image's legibility
       at the size each shows it, then confirm indexation within 30 days.
+
+### Deployment results — 2026-11-24
+
+Host: Vercel, project `chromatic-tuner-web` (root directory `apps/web`). Canonical origin:
+**`https://chromatictuner.pro`** — the reverse-DNS reading of `004`'s identifier `pro.chromatictuner.app`,
+so this also settles the origin half of `004`'s T067.
+
+**What was live before this, and why it was not indexed.** The production deployment was 97 days old —
+built before `005`–`008`, none of which had reached the site. Its canonical was `http://localhost:5173/`
+and its `robots.txt` was `Disallow: /`: the fail-safe working exactly as designed, on a deploy that never
+received the variable. Yet `VITE_SITE_URL` *did* exist on the project, created the same day, stored as
+sensitive (so its value could not be read back) and scoped to **Production and Preview** — the second
+half being precisely the misconfiguration the third item above warns about. Had a later production build
+picked it up, every preview would have shipped an allow-all `robots.txt` naming the live origin. It was
+removed from both environments and re-added, Production only, with a value that could be confirmed:
+`vercel env pull --environment=preview` now returns no `VITE_SITE_URL` at all.
+
+**How it was deployed.** `vercel deploy` from the working tree tried to upload 28,779 files — the CLI does
+not apply `.gitignore`, so the native build trees and every `node_modules` went with it — and was refused
+at the 15,000-file limit. The deployment was instead made from `git archive HEAD` extracted to a scratch
+directory (378 files), plus the regenerated `og-image.png`. That is also the honest shape for a release:
+it ships what is committed, not whatever is uncommitted in the checkout. A preview went first, from the
+same export, and served `Disallow: /` with the localhost canonical (read with `vercel curl`, since
+previews are behind Vercel Authentication); production followed and was aliased to the apex.
+
+**Measured against `https://chromatictuner.pro` after the production deploy:**
+
+| Check | Result |
+| --- | --- |
+| `robots.txt` | `Allow: /`, `Sitemap: https://chromatictuner.pro/sitemap.xml` |
+| `sitemap.xml` | `/` and `/privacy.html` — **two** entries, not "nothing else": `004` added the privacy page deliberately and changed `verify:build-output` to match. The item above predates it. |
+| Canonical, `og:url`, `og:image` | `https://chromatictuner.pro/`, `…/`, `…/og-image.png`; `privacy.html` canonicalises to itself |
+| JSON-LD | one block; `url` and `image` absolute on the canonical origin |
+| `/some/page`, `/does-not-exist.svg` (with `Accept: text/html`) | **`404`** — Vercel's static output has no SPA rewrite unless one is configured, so the host already does what D10 asks. No configuration was needed; none should be added. |
+| `www.chromatictuner.pro`, `chromatic-tuner-web.vercel.app` | `308` to the apex, so neither competes for the same queries |
+| Served `og-image.png` | byte-identical to the committed file (SHA-1 `1727fb5f…`) |
+
+**`og-image.png` was stale.** It still carried `005`'s *original* dark background `#0B0B0F`; `dc89df6`
+moved `color.background.dark` to `#121419` and nothing regenerated the card. Regenerated per the item
+above and checked by pixel: corner `(11, 11, 15)` before, `(18, 20, 25)` after — exactly the current token.
+Nothing gates this, for the same reason `008` needed `listing/assets/artwork.json` for the icons: a PNG carries no
+evidence of the palette it was drawn with.
+
+**V28 — partially run.**
+
+- **Lighthouse (mobile, navigation) — pass.** SEO 100, Accessibility 100, Best Practices 100; 40 audits
+  passed, 0 failed.
+- **Schema.org validator — pass.** One `SoftwareApplication`, 0 errors, 0 warnings.
+- **Google Rich Results Test — not run.** It requires a signed-in Google account and a reCAPTCHA. ⚠️
+  **Expect it not to report "zero errors" as quickstart V28 step 1 demands.** Google's Software App rich
+  result requires `aggregateRating` or `review`, and research D6 rejected both on the grounds that there
+  are no ratings and inventing them is the unverifiable claim D6 exists to prevent. The likely outcome is
+  a Software App item flagged for the missing field — which is a property of the decision, not a defect,
+  and must not be "fixed" by adding a rating. Run it, record what it says here, and if it is that, record
+  the acceptance and amend V28's pass condition.
+
+**V29 — open.** Needs a person pasting the link into three platforms and judging the card at the size each
+shows it, then 30 days for indexation. Submitting `https://chromatictuner.pro/sitemap.xml` in Google
+Search Console (the domain is on Vercel DNS, so a TXT record verifies it) starts that clock rather than
+waiting for discovery. Check by **2026-12-24** that the apex is indexed and no `*.vercel.app` address is.
 
 ---
 
