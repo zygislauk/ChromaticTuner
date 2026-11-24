@@ -985,7 +985,7 @@ something no gate in this repo can check.
 - [X] **Regenerate `og-image.png` if the copy or the palette changed** — `pnpm build` first, then
       `pnpm --filter @chromatic-tuner/web og:image`, then commit. The generator lifts both the palette and
       the headline out of `dist/index.html`, so a stale `dist/` produces a stale card.
-- [ ] **Run V28** — Rich Results Test, Schema.org validator, Lighthouse SEO — against the deployed URL.
+- [X] **Run V28** — Rich Results Test, Schema.org validator, Lighthouse SEO — against the deployed URL.
 - [ ] **Run V29** — paste the URL into at least three platforms, check the card and the image's legibility
       at the size each shows it, then confirm indexation within 30 days.
 
@@ -1031,18 +1031,18 @@ above and checked by pixel: corner `(11, 11, 15)` before, `(18, 20, 25)` after �
 Nothing gates this, for the same reason `008` needed `listing/assets/artwork.json` for the icons: a PNG carries no
 evidence of the palette it was drawn with.
 
-**V28 — partially run.**
+**V28 — pass.**
 
 - **Lighthouse (mobile, navigation) — pass.** SEO 100, Accessibility 100, Best Practices 100; 40 audits
   passed, 0 failed.
 - **Schema.org validator — pass.** One `SoftwareApplication`, 0 errors, 0 warnings.
-- **Google Rich Results Test — not run.** It requires a signed-in Google account and a reCAPTCHA. ⚠️
-  **Expect it not to report "zero errors" as quickstart V28 step 1 demands.** Google's Software App rich
-  result requires `aggregateRating` or `review`, and research D6 rejected both on the grounds that there
-  are no ratings and inventing them is the unverifiable claim D6 exists to prevent. The likely outcome is
-  a Software App item flagged for the missing field — which is a property of the decision, not a defect,
-  and must not be "fixed" by adding a rating. Run it, record what it says here, and if it is that, record
-  the acceptance and amend V28's pass condition.
+- **Google Rich Results Test — pass.** Run by hand, signed in, at 2026-11-24 13:24:58: "1 valid item
+  detected", **Software apps**, crawled successfully, eligible for rich results, with "non-critical issues
+  detected" (not expanded when recorded). A prediction recorded here earlier — that the missing
+  `aggregateRating`/`review` would fail the item — was **wrong**: Google currently treats it as non-critical,
+  so V28's "zero errors" holds as written and its pass condition needs no amendment. Whatever the
+  non-critical issues are, the expected candidate is that same rating field, and research D6 still
+  governs it: there are no ratings, and none may be invented to clear a warning.
 
 **V29 — open.** Needs a person pasting the link into three platforms and judging the card at the size each
 shows it, then 30 days for indexation. Submitting `https://chromatictuner.pro/sitemap.xml` in Google
