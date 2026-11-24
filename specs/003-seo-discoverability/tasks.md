@@ -1062,8 +1062,14 @@ an inference, not a measurement. **Re-check LinkedIn in the post composer before
 once into a phone client (WhatsApp or iMessage): two of the three rows above are inspector tools rather
 than real shares, and a phone renders the smallest card, which is the case V-IMG-2 exists for.
 
-**Still needed for V29**: the LinkedIn re-check and one phone share above, then 30 days for indexation.
-Submitting `https://chromatictuner.pro/sitemap.xml` in Google
+**Phone share — pass.** `https://chromatictuner.pro` sent on an iPhone in **iMessage** and **WhatsApp**;
+the card rendered and was confirmed legible in both, which covers the smallest-card case V-IMG-2 exists
+for. With Facebook and Discord that is four platforms, two of them real shares on a phone — past SC-024's
+three. **LinkedIn — waived, not passed:** the owner does not intend the link to be shared there, so its
+blurred inspector card is not re-checked. If that changes, re-check it in the post composer first.
+
+**Still needed for V29**: indexation only. Indexing of `/` was requested through URL Inspection on
+2026-11-24. Submitting `https://chromatictuner.pro/sitemap.xml` in Google
 Search Console (the domain is on Vercel DNS, so a TXT record verifies it) starts that clock rather than
 waiting for discovery. Check by **2026-12-24** that the apex is indexed and no `*.vercel.app` address is.
 
