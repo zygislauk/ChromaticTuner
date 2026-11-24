@@ -1067,6 +1067,16 @@ Submitting `https://chromatictuner.pro/sitemap.xml` in Google
 Search Console (the domain is on Vercel DNS, so a TXT record verifies it) starts that clock rather than
 waiting for discovery. Check by **2026-12-24** that the apex is indexed and no `*.vercel.app` address is.
 
+**Search Console — verified 2026-11-24** as a **Domain** property for `chromatictuner.pro`, by a
+`google-site-verification` TXT record on the apex in Vercel DNS. The record must stay: Google re-checks it,
+and removing it un-verifies the property. The first token issued was superseded by a second before it was
+verified, so the first record was removed — only the current token is in DNS. `sitemap.xml` was submitted
+the same day and reported "Success". A Domain property has no implied prefix, so the sitemap field takes
+the full URL, `https://chromatictuner.pro/sitemap.xml` — a bare `sitemap.xml` is rejected as an invalid
+address. A Domain property was chosen over a URL-prefix one because it also reports `http://` and `www.`
+variants, which is what the "indexed at the canonical address and nowhere beside it" half of V29 needs;
+it cannot see `*.vercel.app`, a different domain, so that half still rests on the `site:` search.
+
 ---
 
 ## Dependencies & Execution Order
