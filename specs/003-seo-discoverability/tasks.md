@@ -1044,8 +1044,26 @@ evidence of the palette it was drawn with.
   non-critical issues are, the expected candidate is that same rating field, and research D6 still
   governs it: there are no ratings, and none may be invented to clear a warning.
 
-**V29 — open.** Needs a person pasting the link into three platforms and judging the card at the size each
-shows it, then 30 days for indexation. Submitting `https://chromatictuner.pro/sitemap.xml` in Google
+**V29 — link previews run 2026-11-24; indexation open.** Every common preview fetcher
+(`facebookexternalhit`, `Twitterbot`, `Slackbot-LinkExpanding`, `WhatsApp`, `LinkedInBot`, `Discordbot`)
+was first confirmed to get `200` and all eight `og:` and both `twitter:` tags, and the image `200 image/png`,
+so anything wrong in a client is that client's cache, not the origin. Then, by hand:
+
+| Platform | How | Title | Description | Image | Card text legible (V-IMG-2) |
+| --- | --- | --- | --- | --- | --- |
+| Facebook | Sharing Debugger, re-scraped | ✓ | ✓ (one line, ellipsised — Facebook's own clamp) | ✓ | ✓ headline and subline |
+| Discord | real message | ✓ | ✓ in full | ✓ | ✓ headline and subline |
+| LinkedIn | Post Inspector | ✓ | — (LinkedIn no longer renders descriptions) | ✓ but **blurred** | headline only just; subline **no** |
+
+Facebook's debugger reported response code `206`: its scraper issues range requests, and the canonical it
+resolved was `https://chromatictuner.pro/`, so that is not a fault. The LinkedIn blur has the look of an
+upscaled low-resolution placeholder, and the same 1200 × 630 file is sharp on the other two — but that is
+an inference, not a measurement. **Re-check LinkedIn in the post composer before counting it**, and paste
+once into a phone client (WhatsApp or iMessage): two of the three rows above are inspector tools rather
+than real shares, and a phone renders the smallest card, which is the case V-IMG-2 exists for.
+
+**Still needed for V29**: the LinkedIn re-check and one phone share above, then 30 days for indexation.
+Submitting `https://chromatictuner.pro/sitemap.xml` in Google
 Search Console (the domain is on Vercel DNS, so a TXT record verifies it) starts that clock rather than
 waiting for discovery. Check by **2026-12-24** that the apex is indexed and no `*.vercel.app` address is.
 
